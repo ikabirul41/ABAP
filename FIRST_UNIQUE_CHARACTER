@@ -1,0 +1,46 @@
+*&---------------------------------------------------------------------*
+*& Report ZTEST_FIRST_UNIQUE_CHARACTER
+*&---------------------------------------------------------------------*
+*& Given a string s, find the first non-repeating character in it and
+*& return its index. If it does not exist, return -1.
+*& Example 1:
+*& Input: s = "leetcode"
+*& Output: 0
+*& Example 2:
+*& Input: s = "loveleetcode"
+*& Output: 2
+*& Please note DO NOT USE PREDEFINED FUNCTIONS LIKE FIND MATCH etc.
+*&---------------------------------------------------------------------*
+REPORT ztest_first_unique_character.
+
+PARAMETERS p_input TYPE string DEFAULT 'loveleetcode'.
+
+TYPES: BEGIN OF char,
+         char TYPE c,
+       END OF char.
+TYPES charset TYPE STANDARD TABLE OF char WITH DEFAULT KEY.
+DATA(string_length) = strlen( p_input ).
+IF string_length = 0.
+  WRITE:/ |Input is empty!!!|.
+ELSEIF string_length = 1.
+  WRITE:/ |First Unique character in the given string is: { p_input }|.
+ELSE.
+  "Fill the internal table
+  DATA(charsets) = VALUE charset( FOR i = 0 THEN i + 1 UNTIL i > string_length - 1
+                                 ( char  = p_input+i(1) ) ).
+ENDIF.
+
+
+LOOP AT charsets INTO DATA(charset).
+  DATA(charsets_temp) = charsets.
+  DELETE charsets_temp INDEX sy-tabix.
+  DATA(pos) = sy-tabix - 1.
+  READ TABLE charsets_temp ASSIGNING FIELD-SYMBOL(<fs_char>) WITH KEY char = charset-char.
+  IF sy-subrc NE 0.
+    WRITE:/ | Horray!!! Found the first unique occurance. It is: { charset-char } & Position is: { pos } |.
+    EXIT.
+  ENDIF.
+  REFRESH charsets_temp.
+ENDLOOP.
+
+WRITE:/ | - 1 |.

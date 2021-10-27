@@ -7,7 +7,7 @@ For any query please reach out to me via email "ikabirul41@gmail.com".
 
 -----------------------------------------------------------------------
 
-This repository will contain the smaple/easy program from diff source like leetcode.
+This repository will contain the sample/easy program from diff source like leetcode.
 If you have any algorithmic queries feel free to reavh out to me via email.
 I will try to response within a week.
 

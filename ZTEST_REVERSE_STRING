@@ -1,0 +1,34 @@
+*&---------------------------------------------------------------------*
+*& Report ZTEST_REVERSE_STRING
+*&---------------------------------------------------------------------*
+*& This program will help to understand the reverse a string wo functions
+*&---------------------------------------------------------------------*
+REPORT ztest_reverse_string.
+
+PARAMETERS p_input TYPE string DEFAULT sy-abcde.
+* With function we can do like below
+WRITE:/ |Input: { p_input }|.
+DATA(str) = reverse( p_input ).
+WRITE:/ |Output: { str }|.
+
+* Without the predefined function.
+* First you need to store the string in one internal table.
+TYPES: BEGIN OF letter,
+         char TYPE c,
+       END OF letter.
+TYPES charset TYPE TABLE OF letter WITH EMPTY KEY.
+DATA(stringLength) = strlen( p_input ).
+* Filling the internal table with individual characters from the input string.
+DATA(charsets) = VALUE charset( FOR i = 0 THEN i + 1 UNTIL i > stringLength - 1
+                                ( char = p_input+i(1) ) ).
+
+* We can reverse the above internal logic and then if we concatenate then we will get our output.
+
+DATA(charsetsReverse) = VALUE charset( FOR i = stringLength - 1 THEN i - 1 UNTIL i < 0
+                                      ( char = p_input+i(1) ) ). "This can also be handle with exceptions.
+DATA outputString TYPE string.
+LOOP AT charsetsReverse ASSIGNING FIELD-SYMBOL(<fs_letter>).
+  CONCATENATE outputString <fs_letter>-char INTO outputString.
+ENDLOOP.
+
+WRITE:/ |Output String is: { outputString } |.

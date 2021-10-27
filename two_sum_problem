@@ -1,0 +1,74 @@
+*&---------------------------------------------------------------------*
+*& Report ztwo_sum_problem
+*&---------------------------------------------------------------------*
+*Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+*
+*You may assume that each input would have exactly one solution, and you may not use the same element twice.
+*
+*You can return the answer in any order.*
+*
+*Example 1:
+*
+*Input: nums = [2,7,11,15], target = 9
+*Output: [0,1]
+*Output: Because nums[0] + nums[1] == 9, we return [0, 1].
+*Example 2:
+*
+*Input: nums = [3,2,4], target = 6
+*Output: [1,2]
+*Example 3:
+*
+*Input: nums = [3,3], target = 6
+*Output: [0,1]
+*&---------------------------------------------------------------------*
+REPORT ztwo_sum_problem.
+
+TYPES: BEGIN OF number,
+         num TYPE i,
+         pos TYPE i,
+       END OF number.
+DATA number_list TYPE STANDARD TABLE OF number.
+DATA wa_number TYPE number.
+
+PARAMETERS p_input TYPE string DEFAULT '2,7,11,15,17,19'.
+PARAMETERS p_target TYPE i DEFAULT 49.
+CONSTANTS comma TYPE c VALUE ','.
+
+FIND ALL OCCURRENCES OF comma IN p_input MATCH COUNT DATA(count).
+
+* Fill internal table
+DO count TIMES.
+  SPLIT p_input AT comma INTO DATA(curr_number) DATA(remaining_string).
+  p_input = remaining_string.
+  wa_number-num = curr_number.
+  wa_number-pos = sy-index.
+  INSERT wa_number INTO TABLE number_list.
+  IF sy-index = count.
+    wa_number-pos = count + 1.
+    wa_number-num = remaining_string.
+    INSERT wa_number INTO TABLE number_list.
+  ENDIF.
+ENDDO.
+
+DATA(find_number) = 0.
+DATA(pos1) = 0.
+DATA(pos2) = 0.
+DATA(number_list_temp) = number_list.
+LOOP AT number_list ASSIGNING FIELD-SYMBOL(<fs_number>).
+  number_list_temp = number_list.
+  find_number = p_target - <fs_number>-num.
+  pos1 = sy-tabix.
+  DELETE number_list_temp INDEX sy-tabix.
+  CLEAR wa_number.
+  READ TABLE number_list_temp INTO wa_number WITH KEY num = find_number.
+  IF sy-subrc = 0.
+    pos2 = wa_number-pos.
+    EXIT.
+  ENDIF.
+  REFRESH number_list_temp.
+ENDLOOP.
+IF pos1 IS NOT INITIAL AND pos2 NE 0.
+  WRITE:/ |{ pos1 - 1 }| & |{ pos2 - 1 }|.
+ELSE.
+  WRITE:/ |Not Found Return Code is -1|.
+ENDIF.

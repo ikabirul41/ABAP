@@ -1,0 +1,72 @@
+*&---------------------------------------------------------------------*
+*& Report ZTEST_FIND_MAXIMUM_OCCURANCE
+*&---------------------------------------------------------------------*
+*& You have given a string for example "ABAACD" and then you need to
+*& write a program to find the maximum occurance of a letter from the
+*& given string.
+*& In the given example A is apeared thrice.
+*&---------------------------------------------------------------------*
+REPORT ztest_find_maximum_occurance.
+
+PARAMETERS: p_input TYPE string DEFAULT 'ABAACD'.
+
+TYPES: BEGIN OF char,
+         char TYPE c,
+         occ  TYPE i,
+       END OF char.
+DATA: charSets TYPE STANDARD TABLE OF char WITH KEY char.
+DATA(stringLength) = strlen( p_input ).
+FIELD-SYMBOLS <charSet> TYPE char.
+* Corner case handling
+IF stringLength IS INITIAL.
+  WRITE:/ |Emplty String, Evaluation of maximum occurance is not possible!!!|.
+ENDIF.
+
+DATA(offset) = 0.
+DATA(maxOccChar) = p_input+0(1).
+DATA(maxOcc) = 1.
+DATA(curChar) = ''.
+*Filling internal table
+DO stringLength TIMES.
+curChar = p_input+offset(1).
+READ TABLE charSets INTO DATA(charSet) WITH KEY char = curChar.
+IF sy-subrc IS NOT INITIAL.
+  charSet-char = p_input+offset(1).
+  charSet-occ = 1.
+  INSERT charSet INTO TABLE charSets.
+ELSE.
+  charSet-occ += 1.
+  MODIFY TABLE charSets FROM charSet.
+ENDIF.
+offset += 1.
+CLEAR charSet.
+ENDDO.
+
+SORT charSets BY occ DESCENDING.
+* Two possible ways we can suggest the output.
+* 1. We can onle show the first record from the internal table charSets.
+* 2. If there are multiple same ocurance of different letter.
+
+" 1st Scenario
+WRITE:/ |1st Scenario|.
+READ TABLE charSets INTO charSet INDEX 1.
+IF sy-subrc = 0.
+  Write:/ |Maximum occuring character is: { charSet-char } |.
+  WRITE:/ |Occuring time: { charSet-occ } |.
+ENDIF.
+ULINE.
+
+
+* 2nd Scenario
+WRITE:/ |2nd Scenario|.
+DATA(compare_previous) = 0.
+LOOP AT charSets INTO charSet.
+ IF compare_previous = charSet-occ AND sy-tabix NE 1.
+  WRITE:/ |Wait... Found a New One!!!|.
+ ELSEIF sy-tabix NE 1.
+   EXIT.
+ ENDIF.
+  compare_previous = charSet-occ.
+  Write:/ |Maximum occuring character is: { charSet-char } |.
+  WRITE:/ |Occuring time: { charSet-occ } |.
+ENDLOOP.

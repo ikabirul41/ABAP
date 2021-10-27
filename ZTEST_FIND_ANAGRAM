@@ -1,0 +1,48 @@
+*&---------------------------------------------------------------------*
+*& Report ZTEST_FIND_ANAGRAM
+*&---------------------------------------------------------------------*
+*& An anagram is a word or phrase formed by rearranging the letters of a
+*& different word or phrase, typically using all the original letters
+*& exactly once.For example, the word anagram itself can be rearranged
+*& into a ram, also the word binary into brainy and the word adobe into
+*& abode.
+*&---------------------------------------------------------------------*
+REPORT ZTEST_FIND_ANAGRAM.
+
+PARAMETERS p_input1 TYPE string DEFAULT 'BINARY'.
+PARAMETERS p_input2 TYPE string DEFAULT 'BRAINY'.
+
+* Easiest way to store individual character and do sort and compare.
+
+TYPES: BEGIN OF char,
+       char TYPE c,
+       END OF char.
+
+TYPES charset TYPE standard table of char with DEFAULT KEY.
+
+data(string1_length) = strlen( p_input1 ).
+data(string2_length) = strlen( p_input2 ).
+
+IF string1_length NE string2_length.
+ WRITE:/ |This is not an Anagram !!!! |.
+ENDIF.
+
+DATA(charsets) = VALUE charset( for i = 0 THEN i + 1 until i > string1_length - 1
+                                ( char = p_input1+i(1) ) ).
+
+SORT charsets.
+
+DATA(charsets_reverse) = VALUE charset( for i = string2_length - 1 THEN i - 1 until i < 0
+                                ( char = p_input2+i(1) ) ).
+
+SORT charsets_reverse.
+
+LOOP AT charsets INTO DATA(charset).
+  READ TABLE charsets_reverse INTO DATA(charset_reverse) INDEX sy-tabix..
+  IF sy-subrc NE 0 OR charset-char NE charset_reverse-char.
+    WRITE:/ |This is not an Anagram !!!! |.
+    RETURN.
+  ENDIF.
+ENDLOOP.
+
+WRITE:/ | Hooray!!! This is an Anagram.|.

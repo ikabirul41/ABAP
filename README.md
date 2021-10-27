@@ -11,3 +11,7 @@ This repository will contain the sample/easy program from diff source like leetc
 If you have any algorithmic queries feel free to reavh out to me via email.
 I will try to response within a week.
 
+
+How to debug inline code in SAP GUI?
+Ans: There is a vergy good blog: https://answers.sap.com/questions/13056293/how-to-debug-new-syntax-based-code-where-for-opera.html 
+

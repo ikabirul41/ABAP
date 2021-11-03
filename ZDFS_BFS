@@ -1,0 +1,130 @@
+REPORT zdfs_bfs.
+
+*Sample graph
+* A---->C
+* |     |
+* |     |
+* V     V
+* B<----E
+* |
+* |
+* V
+* D---->F
+
+
+TYPES: BEGIN OF hash,
+         node  TYPE c,
+         value TYPE string,
+       END OF hash.
+
+DATA hashtab TYPE HASHED TABLE OF hash WITH UNIQUE KEY node.
+DATA hashmap TYPE hash.
+
+TYPES: BEGIN OF queue,
+         value TYPE c,
+       END OF queue.
+DATA queuetab TYPE STANDARD TABLE OF queue WITH EMPTY KEY.
+DATA queuemap TYPE queue.
+
+TYPES: BEGIN OF stack,
+         value TYPE c,
+       END OF stack.
+DATA stacktab TYPE STANDARD TABLE OF stack WITH EMPTY KEY.
+DATA stackmap TYPE stack.
+PARAMETERS p_node TYPE c.
+* Fill the graph input
+
+hashtab = VALUE #( ( node = 'A' value = 'C,B' ) "
+                     ( node = 'B' value = 'D' )
+                     ( node = 'C' value = 'E' )
+                     ( node = 'D' value = 'F' )
+                     ( node = 'E' value = '' )
+                     ( node = 'F' value = '' )
+                   ).
+
+CLASS bfs DEFINITION.
+  PUBLIC SECTION.
+    METHODS enqueue IMPORTING val TYPE c.
+    METHODS dequeue RETURNING VALUE(val) TYPE string.
+    METHODS bfs_traversal IMPORTING node TYPE c.
+ENDCLASS.
+
+CLASS bfs IMPLEMENTATION.
+  METHOD enqueue.
+    queuemap-value = val.
+    APPEND queuemap TO queuetab.
+  ENDMETHOD.
+  METHOD dequeue.
+    IF queuetab IS NOT INITIAL.
+      READ TABLE queuetab INTO queuemap INDEX 1.
+      IF sy-subrc = 0. val = queuemap-value. ENDIF.
+      DELETE queuetab INDEX 1.
+    ENDIF.
+  ENDMETHOD.
+  METHOD bfs_traversal.
+    CALL METHOD enqueue( val = p_node ).
+    WHILE ( lines( queuetab ) > 0 ).
+      DATA curr_node TYPE c.
+      curr_node = dequeue(  ).
+      WRITE:/ |{ curr_node } ,|.
+      READ TABLE hashtab INTO hashmap WITH KEY node = curr_node.
+      DO 100 TIMES. "taken some random number
+        IF hashmap-value IS INITIAL. EXIT. ENDIF.
+        DATA node1 TYPE c.
+        DATA node2 TYPE c.
+        SPLIT hashmap-value AT ',' INTO node1 node2.
+        IF node1 IS NOT INITIAL. CALL METHOD enqueue( val = node1 ). ENDIF.
+        IF node2 IS INITIAL. EXIT. ELSE. hashmap-value = node2. ENDIF.
+      ENDDO.
+
+    ENDWHILE..
+  ENDMETHOD.
+ENDCLASS.
+
+CLASS dfs DEFINITION.
+  PUBLIC SECTION.
+    METHODS push IMPORTING val TYPE c.
+
+    METHODS pop RETURNING VALUE(value) TYPE string.
+    METHODS dfs_traversal IMPORTING node TYPE c.
+ENDCLASS.
+CLASS dfs IMPLEMENTATION.
+  METHOD push.
+    stackmap-value = val.
+    APPEND stackmap TO stacktab.
+  ENDMETHOD.
+
+  METHOD pop.
+    CHECK stacktab IS NOT INITIAL.
+    DATA(top) = lines( stacktab ).
+    READ TABLE stacktab INTO stackmap INDEX top.
+    IF sy-subrc = 0. value = stackmap-value. ENDIF.
+    DELETE stacktab INDEX top.
+  ENDMETHOD..
+  METHOD dfs_traversal.
+    CALL METHOD push( val = p_node ).
+    WHILE ( lines( stacktab ) > 0 ).
+      DATA(curr_node) = pop(  ).
+      WRITE:/ |{ curr_node },|.
+      CLEAR hashmap.
+      READ TABLE hashtab INTO hashmap WITH KEY node = curr_node.
+      DO 100 TIMES. "taken some random number
+        IF hashmap-value IS INITIAL. EXIT. ENDIF.
+        DATA node1 TYPE c.
+        DATA node2 TYPE c.
+        SPLIT hashmap-value AT ',' INTO node1 node2.
+        IF node1 IS NOT INITIAL. push( val = node1 ). ENDIF.
+        IF node2 IS INITIAL. EXIT. ELSE. hashmap-value = node2. ENDIF.
+      ENDDO.
+    ENDWHILE.
+
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+  ULINE. WRITE:/ |BFS|. ULINE.
+  DATA(bfs) = NEW bfs( ).
+  bfs->bfs_traversal( p_node ).
+  ULINE. WRITE:/ |DFS|. ULINE.
+  DATA(dfs) = NEW dfs(  ).
+  dfs->dfs_traversal( p_node ).

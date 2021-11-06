@@ -1,0 +1,64 @@
+*&---------------------------------------------------------------------*
+*& Report ztop_k_freq_elem
+*&---------------------------------------------------------------------*
+*347. Top K Frequent Elements
+*Given an integer array nums and an integer k, return the k most frequent elements. You may return the answer in any order.
+*Example 1:
+*Input: nums = [1,1,1,2,2,3], k = 2
+*Output: [1,2]
+*Example 2:
+*Input: nums = [1], k = 1
+*Output: [1]
+*Constraints:
+*1 <= nums.length <= 105
+*k is in the range [1, the number of unique elements in the array].
+*It is guaranteed that the answer is unique.
+*&---------------------------------------------------------------------*
+REPORT ztop_k_freq_elem.
+TYPES: BEGIN OF hash,
+         key TYPE i,
+         val TYPE i,
+       END OF hash.
+DATA t_hash TYPE HASHED TABLE OF hash WITH UNIQUE KEY key.
+DATA wa_hash TYPE hash.
+DATA int TYPE i.
+SELECT-OPTIONS input FOR int.
+PARAMETERS k TYPE i.
+
+* making high value not editable as we need multiple values.
+AT SELECTION-SCREEN.
+  LOOP AT SCREEN.
+    IF screen-name = 'INPUT-HIGH'.
+      screen-active = 0.
+      MODIFY SCREEN.
+      EXIT.
+    ENDIF.
+  ENDLOOP.
+
+START-OF-SELECTION.
+* TO DO validation
+  CHECK input IS NOT INITIAL AND k IS NOT INITIAL.
+  LOOP AT input INTO DATA(wa_input).
+    READ TABLE t_hash ASSIGNING FIELD-SYMBOL(<fs_hash>) WITH KEY key = wa_input-low.
+    IF sy-subrc NE 0.
+      wa_hash-key = wa_input-low.
+      wa_hash-val = 1.
+      INSERT wa_hash INTO TABLE t_hash.
+    ELSE.
+      <fs_hash>-val += 1.
+    ENDIF.
+  ENDLOOP.
+
+  DATA result TYPE string.
+  CLEAR wa_hash.
+  SORT t_hash BY val DESCENDING. "Complexity O(nlog(n)).
+  DATA(count) = 0.
+  LOOP AT t_hash INTO wa_hash.
+    IF ( k = count ). EXIT. ENDIF.
+    result = |{ result }| && |{ wa_hash-key } |.
+    count += 1.
+  ENDLOOP.
+
+  cl_demo_output=>display( result ).
+
+*  Hash + Heap solution will publish soon.

@@ -1,0 +1,69 @@
+*&---------------------------------------------------------------------*
+*& Report zdupl_char_in_a_str
+*&---------------------------------------------------------------------*
+*Find duplicate characters in a String?
+*You need to write a program to print all duplicate characters and their count in Java. For example, if given String is "Programming" then your program should print
+*g : 2
+*r : 2
+*m : 2
+*
+*
+*Solution 1: (Brute-force):
+*iterate from 1 to string length time O(n)
+*store the count of each character. (O(1)
+*sort the table using sort algo/ SORT keyword using count. O(nlogn)
+*iterate the new table again and print for which the character count is greater than 1 O(n).
+*
+*Solution 2: (Optimized):
+*Store the characters with key:value pair and “hash” table. O(n)
+*increment the value if you find it repeated. O(1)
+*iterate hash table and print for which the value is more than 1. (O (n)).
+
+*&---------------------------------------------------------------------*
+REPORT zdupl_char_in_a_str.
+
+TYPES: BEGIN OF hash,
+         key TYPE c,
+         val TYPE i,
+       END OF hash.
+
+DATA hashtab TYPE HASHED TABLE OF hash WITH UNIQUE KEY key.
+DATA wa_hash TYPE hash.
+
+* Selection Screen
+PARAMETERS: p_input TYPE string.
+DATA(str_length) = strlen( p_input ).
+CASE str_length.
+  WHEN 0.
+    WRITE:/ | String is Empty!!! |. RETURN.
+  WHEN 1.
+    WRITE:/ | There is no duplicate character in the given string. |. RETURN.
+  WHEN OTHERS.
+    " Fill hashtable
+    DATA i TYPE i.
+    i = 0.
+    DO str_length TIMES.
+      READ TABLE hashtab ASSIGNING FIELD-SYMBOL(<wa_hash>) WITH KEY key = p_input+i(1).
+      IF sy-subrc NE 0.
+        wa_hash-key = p_input+i(1).
+        wa_hash-val = 1.
+        INSERT wa_hash INTO TABLE hashtab.
+      ELSE.
+        <wa_hash>-val += 1.
+      ENDIF.
+      i += 1.
+    ENDDO.
+ENDCASE.
+
+DATA(is_duplicate_present) = abap_false.
+LOOP AT hashtab INTO wa_hash.
+  IF wa_hash-val > 1.
+    is_duplicate_present = abap_true.
+    WRITE:/ | { wa_hash-key }: { wa_hash-val }|.
+  ENDIF.
+  CLEAR wa_hash.
+ENDLOOP.
+
+IF is_duplicate_present = abap_false.
+  WRITE:/ | There is no duplicate character in the given string. |.
+ENDIF.

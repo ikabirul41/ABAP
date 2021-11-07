@@ -1,0 +1,64 @@
+*&---------------------------------------------------------------------*
+*& Report zfib_program
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zfib_program.
+
+*SAMPLE Fibonacci no: 0 1 1 2 3 5 8 13 21 34 ....
+PARAMETERS: input TYPE i DEFAULT 5.
+
+CLASS fibonacci DEFINITION.
+  PUBLIC SECTION.
+    TYPES: BEGIN OF hash,
+             key TYPE i,
+             val TYPE i,
+           END OF hash.
+    DATA hashtab TYPE HASHED TABLE OF hash WITH UNIQUE KEY key.
+    DATA hash_row TYPE hash.
+    DATA: output TYPE i.
+    METHODS compute IMPORTING input TYPE i RETURNING VALUE(output) TYPE i.
+
+    protected section.
+    private section.
+ENDCLASS.
+
+CLASS fibonacci IMPLEMENTATION.
+  METHOD compute.
+    DATA: lv_num1 TYPE i,
+          lv_num2 TYPE i.
+    DATA: out1 TYPE i,
+          out2 TYPE i.
+    IF ( input > 2 ).
+      lv_num1 = input - 1.
+      READ TABLE hashtab INTO hash_row WITH KEY key = lv_num1.
+      IF sy-subrc NE 0.
+        out1 = me->compute( input = lv_num1 ).
+      ELSE.
+        out1 = hash_row-val.
+      ENDIF.
+      lv_num2 = input - 2.
+      READ TABLE hashtab INTO hash_row WITH KEY key = lv_num2.
+      IF sy-subrc NE 0.
+        out2 = me->compute( input = lv_num2 ).
+      ELSE.
+        out2 = hash_row-val.
+      ENDIF.
+      output = out1 + out2.
+      READ TABLE hashtab INTO hash_row WITH KEY key = input.
+      IF sy-subrc NE 0.
+        hash_row-key = input.
+        hash_row-val = output.
+        INSERT hash_row INTO TABLE hashtab.
+      ENDIF.
+    ELSE.
+      output = input.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+  DATA(fibonacci) = NEW fibonacci(  ).
+  IF  input < 0. WRITE:/ 'OOPS!!! Computing not possible for negative integer. Enter positive interger.'. RETURN. ENDIF.
+  DATA(out) = fibonacci->compute( input - 1 ).
+  cl_demo_output=>display( |Fibonacci({ input }):{ out  }| ).

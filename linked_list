@@ -1,0 +1,78 @@
+*&---------------------------------------------------------------------*
+*& Report zlinked_list
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zlinked_list.
+DATA int TYPE i.
+TYPES: BEGIN OF node,
+         value TYPE i,
+         next  TYPE REF TO data,
+       END OF node.
+DATA root TYPE REF TO node.
+DATA element TYPE REF TO node.
+DATA cursor TYPE REF TO node.
+SELECT-OPTIONS: input FOR int. "For adding node
+PARAMETERS search TYPE i.  "For searching node
+
+CLASS single_linked_list DEFINITION.
+  PUBLIC SECTION.
+    METHODS add_data IMPORTING val TYPE i.
+    METHODS display_data.
+    METHODS search_node IMPORTING val TYPE i.
+ENDCLASS.
+
+CLASS single_linked_list IMPLEMENTATION.
+  METHOD add_data.
+    IF ( root IS INITIAL ).
+      CREATE DATA root.
+      root->value = val.
+      cursor = root.
+    ELSE.
+      CREATE DATA element.
+      element->value = val.
+      cursor->next = element.
+      cursor ?= cursor->next.
+    ENDIF.
+  ENDMETHOD.
+  METHOD search_node.
+    DATA(tmp) = root.
+    WHILE ( tmp IS NOT INITIAL ).
+      IF tmp->value = val.
+        WRITE:/ |Found|.
+        RETURN.
+      ELSE.
+        tmp ?= tmp->next.
+      ENDIF.
+    ENDWHILE.
+    WRITE:/ |Not found|.
+  ENDMETHOD.
+  METHOD display_data.
+    DATA(tmp) = root.
+    WHILE ( tmp IS NOT INITIAL ).
+      WRITE:/ |{ tmp->value }|.
+      tmp ?= tmp->next.
+    ENDWHILE.
+  ENDMETHOD.
+ENDCLASS.
+
+* For having only low value(s)
+AT SELECTION-SCREEN.
+  LOOP AT SCREEN.
+    IF screen-name = 'INPUT-HIGH'.
+      screen-input = 0.
+      MODIFY SCREEN.
+      EXIT.
+    ENDIF.
+  ENDLOOP.
+
+START-OF-SELECTION.
+
+  DATA(ll) = NEW single_linked_list( ).
+  IF input IS NOT INITIAL.
+    LOOP AT input.
+      ll->add_data( val = input-low ).
+    ENDLOOP.
+  ENDIF.
+  ll->display_data( ).
+  ll->search_node( search ).

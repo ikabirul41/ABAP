@@ -1,0 +1,43 @@
+REPORT zlongest_possible_palindrome.
+
+PARAMETERS: p_input TYPE string.
+TYPES: BEGIN OF hash,
+         key TYPE c,
+         val TYPE i,
+       END OF hash.
+DATA hash_tab TYPE HASHED TABLE OF hash WITH UNIQUE KEY key.
+DATA hash_wa TYPE hash.
+DATA(length) = strlen( p_input ).
+DATA i TYPE i VALUE '0'.
+
+CHECK length > 0.
+* forming the hash table
+WHILE ( i < length ).
+  DATA(current) = p_input+i(1).
+  READ TABLE hash_tab ASSIGNING FIELD-SYMBOL(<fs_hash>) WITH KEY key = current.
+  IF sy-subrc NE 0.
+    hash_wa-key = current.
+    hash_wa-val = 1.
+    INSERT hash_wa INTO TABLE hash_tab.
+  ELSE.
+    <fs_hash>-val += 1.
+  ENDIF.
+  i += 1.
+ENDWHILE.
+
+
+CLEAR hash_wa.
+DATA result TYPE i VALUE '0'.
+DATA(is_checked) = abap_false.
+LOOP AT hash_tab INTO hash_wa.
+  IF hash_wa-val MOD 2 = 1 AND is_checked = abap_false.
+    result +=  hash_wa-val.
+    is_checked = abap_true.
+  ELSEIF hash_wa-val MOD 2 = 1.
+    result +=  ( hash_wa-val - 1 ).
+  ELSE.
+    result += hash_wa-val.
+  ENDIF.
+ENDLOOP.
+
+WRITE:/ |longest possible palindrome is:{ result } |.

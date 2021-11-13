@@ -1,0 +1,56 @@
+*&---------------------------------------------------------------------*
+*& Report zmax_valid_parentheses
+*&---------------------------------------------------------------------*
+*Longest valid Parentheses
+*Type: Hard
+*
+*Given a string S consisting of opening and closing parenthesis '(' and ')'. Find length of the longest valid parentheses substring.
+*A parenthesis string is valid if:
+*For every opening parenthesis, there is a closing parenthesis.
+*Opening parenthesis must be closed in the correct order.
+*Example 1:
+*Input: S = ((()
+*Output: 2
+*Explaination: The longest valid
+*parenthesis substring is "()".
+*Example 2:
+*Input: S = )()())
+*Output: 4
+*Explaination: The longest valid
+*parenthesis substring is "()()".
+*&---------------------------------------------------------------------*
+REPORT zmax_valid_parentheses.
+
+PARAMETERS: p_input TYPE string.
+
+DATA:
+  counter TYPE i,
+  length  TYPE i, "String length
+  result  TYPE i,
+  output  TYPE i.
+length = strlen( p_input ).
+
+* validation
+IF length = 0. WRITE:/ '-1'. ENDIF. "-1 represent not found any valid parentheses
+*logic
+DATA i TYPE i VALUE '0'.
+WHILE ( i < length ).
+  DATA(current) = p_input+i(1).
+
+  IF current = '('.
+    counter += 1.
+  ELSEIF counter  GE 1 AND current = ')'.
+    result += 2 .
+    counter -= 1.
+  ENDIF.
+
+  IF ( counter = 0 AND current = ')' ).
+    IF output < result.
+      output = result.
+    ENDIF.
+    result = 0.
+  ENDIF.
+  i += 1.
+ENDWHILE.
+
+WRITE:/ |Maximum valid parentheses are:{ output }|.

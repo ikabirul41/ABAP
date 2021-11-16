@@ -37,6 +37,9 @@ CONSTANTS comma TYPE c VALUE ','.
 FIND ALL OCCURRENCES OF comma IN p_input MATCH COUNT DATA(count).
 
 * Fill internal table
+* this could be done in other ways as well.
+* we can have an internal table of type i with empty key and write the following
+* split <string> at <comma> into table <internal_table>. and then we can loop over
 DO count TIMES.
   SPLIT p_input AT comma INTO DATA(curr_number) DATA(remaining_string).
   p_input = remaining_string.

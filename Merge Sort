@@ -1,0 +1,78 @@
+*&---------------------------------------------------------------------*
+*& Report zmerge_sort
+*&---------------------------------------------------------------------*
+*&
+*&---------------------------------------------------------------------*
+REPORT zmerge_sort.
+
+CLASS merge_sort DEFINITION.
+  PUBLIC SECTION.
+    DATA input_tab TYPE STANDARD TABLE OF i .
+    DATA output_tab TYPE STANDARD TABLE OF i.
+    METHODS initialization.
+    METHODS merge_sort CHANGING  i_tab LIKE input_tab.
+    METHODS merge IMPORTING l_tab LIKE input_tab
+                            r_tab LIKE input_tab
+                  CHANGING  o_tab LIKE output_tab.
+    METHODS display.
+ENDCLASS.
+
+CLASS merge_sort IMPLEMENTATION.
+  METHOD initialization.
+    input_tab = VALUE #( ( 5 ) ( 9 ) ( 2 ) ( 12 ) ( 11 ) ( 19 ) ( 20 ) ).
+    CHECK input_tab IS NOT INITIAL.
+    merge_sort( CHANGING i_tab = input_tab ).
+  ENDMETHOD.
+  METHOD merge_sort.
+    DATA left_tab TYPE STANDARD TABLE OF i .
+    DATA right_tab TYPE STANDARD TABLE OF i .
+    DATA(count) = lines( i_tab ).
+    IF count > 1.
+      DATA(mid) = count / 2 .
+      INSERT LINES OF i_tab TO mid INTO TABLE left_tab.
+      INSERT LINES OF i_tab FROM ( mid + 1 )  INTO TABLE right_tab.
+      merge_sort( CHANGING i_tab = left_tab ).
+      merge_sort( CHANGING i_tab = right_tab ).
+      merge( EXPORTING  l_tab = left_tab
+                        r_tab = right_tab
+             CHANGING   o_tab = i_tab ). ENDIF.
+
+  ENDMETHOD.
+  METHOD merge.
+    DATA: i TYPE i VALUE 1,
+          j TYPE i VALUE 1,
+          k TYPE i VALUE 1.
+
+    DATA(l_count) = lines( l_tab ).
+    DATA(r_count) = lines( r_tab ).
+    WHILE ( i LE l_count AND j LE r_count ).
+      IF ( l_tab[ i ] LE r_tab[ j ] ).
+        o_tab[ k ] = l_tab[ i ].
+        i += 1.      k += 1.
+      ELSEIF ( l_tab[ i ] GE r_tab[ j ] )..
+        o_tab[ k ] = r_tab[ j ].
+        j += 1.      k += 1.
+      ENDIF.
+    ENDWHILE.
+    LOOP AT l_tab INTO DATA(l_tab_wa) FROM ( i ).
+      o_tab[ k ] = l_tab_wa.
+      k += 1.
+      CLEAR l_tab_wa.
+    ENDLOOP.
+    LOOP AT r_tab INTO DATA(r_tab_wa) FROM ( j ).
+      o_tab[ k ] = r_tab_wa.
+      k += 1.
+      CLEAR r_tab_wa.
+    ENDLOOP.
+  ENDMETHOD.
+  METHOD display.
+    LOOP AT input_tab INTO DATA(out_wa).
+      WRITE:|{ out_wa },|.
+    ENDLOOP.
+  ENDMETHOD.
+ENDCLASS.
+
+START-OF-SELECTION.
+  DATA(cls) = NEW merge_sort(  ).
+  cls->initialization( ).
+  cls->display( ).

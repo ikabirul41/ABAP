@@ -1,0 +1,57 @@
+*Longest Substring Without Repeating Characters
+*
+*Given a string s, find the length of the longest substring without repeating characters. 
+*
+*Example 1:
+*
+*Input: s = "abcabcbb"
+*Output: 3
+*Explanation: The answer is "abc", with the length of 3.
+*Example 2:
+*
+*Input: s = "bbbbb"
+*Output: 1
+*Explanation: The answer is "b", with the length of 1.
+*Example 3:
+*
+*Input: s = "pwwkew"
+*Output: 3
+*Explanation: The answer is "wke", with the length of 3.
+*Notice that the answer must be a substring, "pwke" is a subsequence and not a substring.
+*Example 4:
+*
+*Input: s = ""
+*Output: 0
+* 
+*
+*Constraints:
+*0 <= s.length <= 5 * 104
+*s consists of English letters, digits, symbols and spaces.
+REPORT zlongest_substring.
+
+PARAMETERS p_input TYPE string DEFAULT 'abcdace'.
+DATA: i    TYPE i,j TYPE i,curr TYPE c,max TYPE i, sub TYPE string.
+TYPES: BEGIN OF hash,
+         key TYPE c,
+       END OF hash.
+DATA: hash_tab TYPE HASHED TABLE OF hash WITH UNIQUE KEY key,
+      hash_wa type hash.
+DATA(count) = strlen( p_input ).
+i = 0. j = 0.
+WHILE ( i < count - 1 AND j < count  ).
+  curr = p_input+j(1).
+  DATA(hashmap) = VALUE #( hash_tab[ key = curr ] OPTIONAL ).
+  IF hashmap IS INITIAL.
+    hash_wa-key = curr.
+    INSERT hash_wa INTO TABLE hash_tab.
+    CLEAR hash_wa.
+    j += 1.
+    IF max LE j - i .
+      max = j - i.
+      sub = p_input+i(max).
+    ENDIF.
+  ELSE.
+    REFRESH hash_tab. i += 1. j = i.
+  ENDIF.
+ENDWHILE.
+WRITE:/ |{ max }:{ sub }|.  "Complexity --Backtarcking ( O(m+n) n is subset of m ).
